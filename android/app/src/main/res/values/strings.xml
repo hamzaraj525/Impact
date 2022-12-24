@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">impactapp</string>
+
+<string name="facebook_app_id">476402758027328</string>
+<string name="fb_login_protocol_scheme">fb1234</string>
+<string name="facebook_client_token">1584fc65f752f12c4669b31bf29b0bac</string>
+
+
+
+</resources>

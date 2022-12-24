@@ -1,0 +1,110 @@
+import { Dimensions, StyleSheet } from "react-native";
+const { width, height } = Dimensions.get("window");
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+
+    backgroundColor: "#fff",
+  },
+  subTxt: {
+    color: "black",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  subText: {
+    color: "grey",
+    fontWeight: "600",
+    fontSize: 12,
+  },
+  parentContainers: {
+    marginBottom: "6%",
+    paddingHorizontal: "4%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FAFAFA",
+    height: 76,
+  },
+
+  subImg: {
+    width: 29,
+    height: 29,
+  },
+  naemTxt: {
+    paddingHorizontal: "5%",
+    fontSize: 29,
+    color: "black",
+    fontWeight: "700",
+    marginTop: 30,
+  },
+  headerTxt: {
+    padding: "4%",
+    marginTop: "12%",
+    fontSize: 26,
+    color: "black",
+    fontWeight: "700",
+    marginBottom: "5%",
+  },
+  subMitTxt: {
+    paddingHorizontal: "9%",
+    fontSize: 17,
+    color: "black",
+    fontWeight: "700",
+    paddingBottom: 5,
+  },
+  headerSubTitle: {
+    paddingHorizontal: "9%",
+    fontSize: 15,
+    color: "grey",
+    marginTop: 5,
+    paddingBottom: 5,
+  },
+  loginBtn: {
+    width: "70%",
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: height / 5,
+    backgroundColor: "black",
+    alignSelf: "center",
+  },
+  btnsContainer: {
+    position: "absolute",
+    width: width,
+    height: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    bottom: 0,
+  },
+  bottomBtn1: {
+    width: "30%",
+    height: 56,
+    backgroundColor: "#19363C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bottomBtn2: {
+    width: "70%",
+    height: 56,
+    backgroundColor: "pink",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  containerVerifyPic: {
+    width: 44,
+    height: 44,
+    borderRadius: 44 / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F1F1F1",
+  },
+  zeroTxtContainer: {
+    width: 33,
+    height: 33,
+    borderRadius: 33 / 2,
+    backgroundColor: "#CF8C58",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
