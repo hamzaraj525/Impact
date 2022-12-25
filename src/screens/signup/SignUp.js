@@ -174,7 +174,7 @@ function SignUp({navigation, props, route}) {
     const facebookCredential = auth.FacebookAuthProvider.credential(
       data.accessToken,
     );
-    alert('Success');
+
     // Sign-in the user with the credential
     const user_sign_in = auth().signInWithCredential(facebookCredential);
     user_sign_in
