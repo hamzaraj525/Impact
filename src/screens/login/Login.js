@@ -19,13 +19,110 @@ import CheckBox from '@react-native-community/checkbox';
 var validator = require('email-validator');
 import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
+import {
+  GoogleSigninButton,
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import {LoginManager, AccessToken} from 'react-native-fbsdk-next';
 
 function Login({navigation, props, route}) {
   const [loader, setLoader] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmpass, setConfirmPass] = useState('');
+
+  const onGoogleButtonPress = async () => {
+    try {
+      // Get the users ID token
+      const {idToken} = await GoogleSignin.signIn();
+      // Create a Google credential with the token
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+
+      // Sign-in the user with the credential
+      const user_sign_in = auth().signInWithCredential(googleCredential);
+      user_sign_in
+        .then(userInfoo => {
+          setEmail(userInfoo.user.email);
+          console.log('---googleSignIn User--' + userInfoo.user.displayName);
+        })
+        .catch(error => {
+          alert(error);
+        });
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        ToastAndroid.showWithGravityAndOffset(
+          'You have Canceled the Google Sign In',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        ToastAndroid.showWithGravityAndOffset(
+          'Google Sign Already In progress',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        ToastAndroid.showWithGravityAndOffset(
+          'Play services not available or outdated',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      } else if (error.code === 'auth/email-already-in-use') {
+        alert('That email address is already in use!');
+        setLoader(false);
+      }
+    }
+  };
+  //  Handle user state changes
+  // function onAuthStateChanged(user) {
+  //   if (user) {
+  //     setUser(user);
+  //   } else {
+  //     console.log('User Is Not There');
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+  //   return subscriber; // unsubscribe on unmount
+  // }, []);
+
+  const onFacebookButtonPress = async () => {
+    // Attempt login with permissions
+    const result = await LoginManager.logInWithPermissions([
+      'public_profile',
+      'email',
+    ]);
+
+    if (result.isCancelled) {
+      throw 'User cancelled the login process';
+    }
+    // Once signed in, get the users AccesToken
+    const data = await AccessToken.getCurrentAccessToken();
+    if (!data) {
+      throw 'Something went wrong obtaining access token';
+    }
+    // Create a Firebase credential with the AccessToken
+    const facebookCredential = auth.FacebookAuthProvider.credential(
+      data.accessToken,
+    );
+
+    // Sign-in the user with the credential
+    const user_sign_in = auth().signInWithCredential(facebookCredential);
+    user_sign_in
+      .then(userInfoo2 => {
+        setEmail('---FbSignIn----' + userInfoo2.user.email);
+      })
+      .catch(error => {
+        alert(error);
+      });
+  };
 
   const signInValidation = () => {
     const valid = validator.validate(email); // true
@@ -160,17 +257,23 @@ function Login({navigation, props, route}) {
             }}
           />
         </View>
-        <Text
-          style={{
-            color: '#000',
-            fontSize: 12,
-            alignSelf: 'flex-end',
-            borderBottomWidth: h('.1%'),
-            marginRight: h('3%'),
-            marginTop: h('2%'),
-          }}>
-          Mot de passe oublié
-        </Text>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('ForgotPassword');
+          }}
+          style={{}}>
+          <Text
+            style={{
+              color: '#000',
+              fontSize: 12,
+              alignSelf: 'flex-end',
+              borderBottomWidth: h('.1%'),
+              marginRight: h('3%'),
+              marginTop: h('2%'),
+            }}>
+            Mot de passe oublié
+          </Text>
+        </TouchableOpacity>
         <View
           style={{
             height: h('10%'),
@@ -183,6 +286,9 @@ function Login({navigation, props, route}) {
             justifyContent: 'space-between',
           }}>
           <TouchableOpacity
+            onPress={() => {
+              onGoogleButtonPress();
+            }}
             style={{
               height: h('6.5%'),
               width: '48%',
@@ -203,6 +309,9 @@ function Login({navigation, props, route}) {
             <Text style={{color: '#000', marginLeft: h('1%')}}>Google</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={() => {
+              onFacebookButtonPress();
+            }}
             style={{
               height: h('6.5%'),
               width: '48%',

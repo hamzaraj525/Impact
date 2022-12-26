@@ -22,6 +22,7 @@ import SignUp from '../screens/signup/SignUp';
 import Login from '../screens/login/Login';
 import Intro1 from '../screens/intro/Intro1';
 import Intro2 from '../screens/intro/Intro2';
+import ForgotPassword from '../screens/ForgotPassword/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 
@@ -142,6 +143,11 @@ export const ScreenNavigator = () => {
               <Stack.Screen
                 name="Login"
                 component={Login}
+                options={{headerShown: false}}
+              />
+              <Stack.Screen
+                name="ForgotPassword"
+                component={ForgotPassword}
                 options={{headerShown: false}}
               />
               <Stack.Screen

@@ -21,6 +21,7 @@ import auth from '@react-native-firebase/auth';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   addUserid,
+  removeUserId,
   userSignUpKey,
   userPersoanlVerify,
   vehicleVerify,
@@ -46,8 +47,9 @@ function SignUp({navigation, props, route}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmpass, setConfirmPass] = useState('');
+  const {userId} = useSelector(reducers => reducers.regReducer);
 
-  const SignOut = async () => {
+  const SignOutSocial = async () => {
     try {
       await GoogleSignin.signOut();
       setUser(null);
@@ -69,28 +71,30 @@ function SignUp({navigation, props, route}) {
     }
   };
 
-  // const SignOut = async () => {
-  //   auth()
-  //     .signOut()
-  //     .then(() => {
-  //       ToastAndroid.showWithGravityAndOffset(
-  //         'User Signed Out',
-  //         ToastAndroid.SHORT,
-  //         ToastAndroid.BOTTOM,
-  //         10,
-  //         60,
-  //       );
-  //     })
-  //     .catch(error => {
-  //       ToastAndroid.showWithGravityAndOffset(
-  //         'error' + error,
-  //         ToastAndroid.SHORT,
-  //         ToastAndroid.BOTTOM,
-  //         10,
-  //         60,
-  //       );
-  //     });
-  // };
+  const SignOutFun = async () => {
+    auth()
+      .signOut()
+      .then(() => {
+        SignOutSocial();
+        ToastAndroid.showWithGravityAndOffset(
+          'User Signed Out',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+        dispatch(removeUserId(userId));
+      })
+      .catch(error => {
+        ToastAndroid.showWithGravityAndOffset(
+          'error' + error,
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      });
+  };
 
   const onGoogleButtonPress = async () => {
     try {
@@ -98,12 +102,10 @@ function SignUp({navigation, props, route}) {
       const {idToken} = await GoogleSignin.signIn();
       // Create a Google credential with the token
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);
-
       // Sign-in the user with the credential
       const user_sign_in = auth().signInWithCredential(googleCredential);
       user_sign_in
         .then(userInfoo => {
-          setUser(userInfoo);
           console.log(userInfoo.user.displayName);
           uploadGoogleInDataToDatabase(userInfoo);
         })
@@ -179,7 +181,7 @@ function SignUp({navigation, props, route}) {
     const user_sign_in = auth().signInWithCredential(facebookCredential);
     user_sign_in
       .then(userInfoo2 => {
-        setUser(userInfoo2);
+        console.log(userInfoo2.user.email);
         uploadFaceBookInDataToDatabase(userInfoo2);
       })
       .catch(error => {
@@ -525,7 +527,7 @@ function SignUp({navigation, props, route}) {
 
         <TouchableOpacity
           onPress={() => {
-            SignOut();
+            SignOutFun();
           }}
           style={{
             height: h('6.5%'),
