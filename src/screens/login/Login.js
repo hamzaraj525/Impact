@@ -44,6 +44,7 @@ function Login({navigation, props, route}) {
         .then(userInfoo => {
           setEmail(userInfoo.user.email);
           console.log('---googleSignIn User--' + userInfoo.user.displayName);
+          alert('Successfull login');
         })
         .catch(error => {
           alert(error);
@@ -118,6 +119,7 @@ function Login({navigation, props, route}) {
     user_sign_in
       .then(userInfoo2 => {
         setEmail('---FbSignIn----' + userInfoo2.user.email);
+        alert('Successfull login');
       })
       .catch(error => {
         alert(error);
@@ -142,7 +144,7 @@ function Login({navigation, props, route}) {
       const user = await auth().signInWithEmailAndPassword(email, password);
       console.log(user);
       setLoader(false);
-      alert('Done');
+      alert('Successfull Login');
       return {user};
     } catch (error) {
       setLoader(false);

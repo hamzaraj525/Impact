@@ -15,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "568457722616-hrprs9uchcgfv51qbbgrd2groctvbdur.apps.googleusercontent.com",
+          "client_id": "568457722616-35ff1d9crhnido6itg9unkj55d7kv64t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.impactapp",
+            "certificate_hash": "7d7444eac09f44d1513d21852e2ddce56a0bf224"
+          }
+        },
+        {
+          "client_id": "568457722616-l9i6t7jchstb98bbgof3qonssbgdk5rb.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.impactapp",

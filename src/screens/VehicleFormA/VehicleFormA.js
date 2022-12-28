@@ -76,6 +76,7 @@ const VehicleFormA = ({route, navigation}) => {
 
           <View style={[style.passwordContainer, {width: '40%'}]}>
             <TextInput
+              maxLength={4}
               keyboardType="number-pad"
               style={[style.TiName, {width: '80%'}]}
               value={vehicleModelYear}

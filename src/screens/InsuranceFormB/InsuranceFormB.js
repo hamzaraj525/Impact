@@ -22,6 +22,7 @@ import {addUserid} from '../../Redux/Action/actions';
 import Constraints from '../../Constraints/Constraints';
 
 const InsuranceFormB = ({route, navigation}) => {
+  const [validate, setValidate] = useState(false);
   const [compnayName, setComapnyName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -31,30 +32,30 @@ const InsuranceFormB = ({route, navigation}) => {
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/insuranceInformation')
-      .push({
-        InsuranceComapnyName: compnayName,
-        InsuranceAddress: address,
-        InsuranceCity: city,
-        InsuranceZipCode: zipCode,
-        InsuranceCountry: selectedCountry,
-        InsuranceProvince: selectedProvince,
-      })
-      .then(() => {
-        navigation.navigate('InsuranceFormC');
-        setComapnyName('');
-        setAddress('');
-        setCity('');
-        setZipCode('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
-  };
-
-  const changeColor = id => {
-    setColor(id);
+    if (validate === false) {
+      database()
+        .ref('users/' + signUpKey + '/insuranceInformation')
+        .push({
+          InsuranceComapnyName: compnayName,
+          InsuranceAddress: address,
+          InsuranceCity: city,
+          InsuranceZipCode: zipCode,
+          InsuranceCountry: selectedCountry,
+          InsuranceProvince: selectedProvince,
+        })
+        .then(() => {
+          navigation.navigate('InsuranceFormC');
+          setComapnyName('');
+          setAddress('');
+          setCity('');
+          setZipCode('');
+        })
+        .catch(error => {
+          alert('Something went wrong' + error);
+        });
+    } else {
+      console.log('Validation required');
+    }
   };
 
   const handleChange2 = e => {
@@ -65,6 +66,18 @@ const InsuranceFormB = ({route, navigation}) => {
   const handleChange3 = e => {
     const result = e.replace(/[^a-z]/gi, '');
     setCity(result);
+  };
+
+  const handlePostalCode = e => {
+    let regex = /[A-Za-z0-9]{3}+ ?([A-Za-z0-9])*$/gi;
+    setZipCode(e);
+    if (!regex.test(e)) {
+      console.log('format must be xxx xxx');
+      setValidate(true);
+    } else {
+      setValidate(false);
+      console.log('Valid');
+    }
   };
 
   const inputsList = () => {
@@ -116,15 +129,22 @@ const InsuranceFormB = ({route, navigation}) => {
           <View style={[style.passwordContainer, {width: '40%'}]}>
             <TextInput
               style={[style.TiName, {width: '80%'}]}
-              maxLength={100}
+              maxLength={7}
               value={zipCode}
               onChangeText={e => {
-                setZipCode(e);
+                handlePostalCode(e);
               }}
               placeholder={'Code postale'}
             />
           </View>
         </View>
+        {validate ? (
+          <Text style={{color: 'red', alignSelf: 'center', marginTop: '4%'}}>
+            Le format du code postal doit être xxx xxx
+          </Text>
+        ) : (
+          <Text style={{}}></Text>
+        )}
         <View style={[style.inputParent, {marginTop: '7%'}]}>
           <Picker
             mode="dropdown"

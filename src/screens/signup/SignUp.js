@@ -107,7 +107,17 @@ function SignUp({navigation, props, route}) {
       user_sign_in
         .then(userInfoo => {
           console.log(userInfoo.user.displayName);
-          uploadGoogleInDataToDatabase(userInfoo);
+          if (userInfoo.additionalUserInfo.isNewUser === false) {
+            ToastAndroid.showWithGravityAndOffset(
+              'User already exist, go to login screen',
+              ToastAndroid.SHORT,
+              ToastAndroid.BOTTOM,
+              10,
+              60,
+            );
+          } else {
+            uploadGoogleInDataToDatabase(userInfoo);
+          }
         })
         .catch(error => {
           alert(error);
@@ -181,8 +191,18 @@ function SignUp({navigation, props, route}) {
     const user_sign_in = auth().signInWithCredential(facebookCredential);
     user_sign_in
       .then(userInfoo2 => {
-        console.log(userInfoo2.user.email);
-        uploadFaceBookInDataToDatabase(userInfoo2);
+        console.log(userInfoo2.additionalUserInfo.isNewUser);
+        if (userInfoo2.additionalUserInfo.isNewUser === false) {
+          ToastAndroid.showWithGravityAndOffset(
+            'User already exist, go to login screen',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        } else {
+          uploadFaceBookInDataToDatabase(userInfoo2);
+        }
       })
       .catch(error => {
         alert(error);
@@ -525,7 +545,7 @@ function SignUp({navigation, props, route}) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           onPress={() => {
             SignOutFun();
           }}
@@ -539,7 +559,7 @@ function SignUp({navigation, props, route}) {
             flexDirection: 'row',
           }}>
           <Text style={{color: '#000', marginLeft: h('1%')}}>SignOut</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </ScrollView>
       <BottomBtnSignUp
         loader={loader}

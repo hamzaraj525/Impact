@@ -24,11 +24,11 @@ import {
   vehicleVerify,
   insuranceVerify,
 } from '../../Redux/Action/actions';
-
 import Constraints from '../../Constraints/Constraints';
 
 const VehicleFormD = ({route, navigation}) => {
   const dispatch = useDispatch();
+  const [validate, setValidate] = useState(false);
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
@@ -57,36 +57,31 @@ const VehicleFormD = ({route, navigation}) => {
   };
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/vehicleInformation')
-      .push({
-        OwnerPhoneNumber: phone,
-        OwnerAddress: address,
-        OwnerCity: city,
-        OwnerZipCode: zipCode,
-        OwnerCountry: selectedCountry,
-        OwnerProvince: selectedProvince,
-        vehicleDetailsVerified: true,
-      })
-      .then(() => {
-        updateVehicleVerify();
-        setPhone('');
-        setAddress('');
-        setCity('');
-        setZipCode('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
-  };
-
-  const changeColor = id => {
-    setColor(id);
-  };
-
-  const btnFunction = item => {
-    changeColor(item.key);
-    setGender(item.title);
+    if (validate === false) {
+      database()
+        .ref('users/' + signUpKey + '/vehicleInformation')
+        .push({
+          OwnerPhoneNumber: phone,
+          OwnerAddress: address,
+          OwnerCity: city,
+          OwnerZipCode: zipCode,
+          OwnerCountry: selectedCountry,
+          OwnerProvince: selectedProvince,
+          vehicleDetailsVerified: true,
+        })
+        .then(() => {
+          updateVehicleVerify();
+          setPhone('');
+          setAddress('');
+          setCity('');
+          setZipCode('');
+        })
+        .catch(error => {
+          alert('Something went wrong' + error);
+        });
+    } else {
+      console.log('Validation required');
+    }
   };
 
   const handleChange2 = e => {
@@ -97,6 +92,18 @@ const VehicleFormD = ({route, navigation}) => {
   const handleChange3 = e => {
     const result = e.replace(/[^a-z]/gi, '');
     setCity(result);
+  };
+
+  const handlePostalCode = e => {
+    let regex = /[A-Za-z0-9]{3}([A-Za-z0-9]+ ?)*$/gi;
+    setZipCode(e);
+    if (!regex.test(e)) {
+      console.log('format must be xxx xxx');
+      setValidate(true);
+    } else {
+      setValidate(false);
+      console.log('Valid');
+    }
   };
 
   const inputsList = () => {
@@ -148,17 +155,24 @@ const VehicleFormD = ({route, navigation}) => {
 
           <View style={[style.passwordContainer, {width: '40%'}]}>
             <TextInput
-              keyboardType="number-pad"
+              maxLength={7}
               style={[style.TiName, {width: '80%'}]}
-              maxLength={100}
               value={zipCode}
               onChangeText={e => {
-                setZipCode(e);
+                handlePostalCode(e);
               }}
               placeholder={'Code postale'}
             />
           </View>
         </View>
+        {validate ? (
+          <Text style={{color: 'red', alignSelf: 'center', marginTop: '4%'}}>
+            Le format du code postal doit être xxx xxx
+          </Text>
+        ) : (
+          <Text style={{}}></Text>
+        )}
+
         <View style={[style.inputParent, {marginTop: '7%'}]}>
           <Picker
             mode="dropdown"
