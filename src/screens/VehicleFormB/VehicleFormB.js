@@ -3,6 +3,7 @@ import {
   StatusBar,
   TextInput,
   View,
+  ToastAndroid,
   Text,
   Pressable,
   Image,
@@ -24,24 +25,44 @@ import Constraints from '../../Constraints/Constraints';
 const VehicleFormB = ({route, navigation}) => {
   const [vehiclePlateNumber, setVehiclePlateNumber] = useState('');
   const [vehicleRegCertiNumber, setVehicleRegCertNumber] = useState('');
-
+  const [validate, setValidate] = useState(false);
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/vehicleInformation')
-      .push({
-        vehiclePlateNumber: vehiclePlateNumber,
-        vehicleRegCertiNumber: vehicleRegCertiNumber,
-      })
-      .then(() => {
-        navigation.navigate('VehicleFormC');
-        setVehiclePlateNumber('');
-        setVehicleRegCertNumber('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (vehiclePlateNumber.length > 0) {
+      if (vehicleRegCertiNumber.length > 0) {
+        database()
+          .ref('users/' + signUpKey + '/vehicleInformation')
+          .push({
+            vehiclePlateNumber: vehiclePlateNumber,
+            vehicleRegCertiNumber: vehicleRegCertiNumber,
+          })
+          .then(() => {
+            navigation.navigate('VehicleFormC');
+            setVehiclePlateNumber('');
+            setVehicleRegCertNumber('');
+          })
+          .catch(error => {
+            alert('Something went wrong' + error);
+          });
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const handleChange2 = e => {
@@ -50,9 +71,15 @@ const VehicleFormB = ({route, navigation}) => {
   };
 
   const handleChange3 = e => {
-    const result = e.replace(/[^a-z0-9]/gi, '');
-    const res = result.replace(/(\d{2})(\d{3})/, '$1 $2');
-    setVehiclePlateNumber(res);
+    let regex = /[A-Za-z0-9]{3}([A-Za-z0-9]+ ?)*$/gi;
+    setVehiclePlateNumber(e);
+    if (!regex.test(e)) {
+      console.log('format must be xxx xxx');
+      setValidate(true);
+    } else {
+      setValidate(false);
+      console.log('Valid');
+    }
   };
 
   const inputsList = () => {
@@ -75,6 +102,13 @@ const VehicleFormB = ({route, navigation}) => {
             {vehiclePlateNumber.length}/7
           </Text>
         </View>
+        {validate ? (
+          <Text style={{color: 'red', alignSelf: 'center', marginTop: '4%'}}>
+            Le format du numéro de plaque doit être xxx xxx
+          </Text>
+        ) : (
+          <Text style={{}}></Text>
+        )}
         <Text style={style.headerTxt}>
           {Constraints.VEHICLE_REG_CERTIFICATION_NUMBER}
         </Text>
@@ -82,7 +116,7 @@ const VehicleFormB = ({route, navigation}) => {
         <View style={[style.passwordContainer, {marginTop: '3%'}]}>
           <TextInput
             keyboardType="number-pad"
-            maxLength={13}
+            maxLength={12}
             style={style.TiName}
             value={vehicleRegCertiNumber}
             onChangeText={e => {
@@ -94,7 +128,7 @@ const VehicleFormB = ({route, navigation}) => {
             style={{
               color: vehicleRegCertiNumber.length > 0 ? 'black' : 'grey',
             }}>
-            {vehicleRegCertiNumber.length}/13
+            {vehicleRegCertiNumber.length}/12
           </Text>
         </View>
       </View>

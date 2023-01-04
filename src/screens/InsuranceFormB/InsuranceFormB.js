@@ -5,6 +5,7 @@ import {
   View,
   Text,
   Pressable,
+  ToastAndroid,
   Image,
   TouchableOpacity,
   SafeAreaView,
@@ -32,29 +33,89 @@ const InsuranceFormB = ({route, navigation}) => {
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    if (validate === false) {
-      database()
-        .ref('users/' + signUpKey + '/insuranceInformation')
-        .push({
-          InsuranceComapnyName: compnayName,
-          InsuranceAddress: address,
-          InsuranceCity: city,
-          InsuranceZipCode: zipCode,
-          InsuranceCountry: selectedCountry,
-          InsuranceProvince: selectedProvince,
-        })
-        .then(() => {
-          navigation.navigate('InsuranceFormC');
-          setComapnyName('');
-          setAddress('');
-          setCity('');
-          setZipCode('');
-        })
-        .catch(error => {
-          alert('Something went wrong' + error);
-        });
+    if (compnayName.length > 0) {
+      if (address.length > 0) {
+        if (city.length > 0) {
+          if (zipCode.length > 0) {
+            if (selectedCountry.length > 0) {
+              if (selectedProvince.length > 0) {
+                if (validate === false) {
+                  database()
+                    .ref('users/' + signUpKey + '/insuranceInformation')
+                    .push({
+                      InsuranceComapnyName: compnayName,
+                      InsuranceAddress: address,
+                      InsuranceCity: city,
+                      InsuranceZipCode: zipCode,
+                      InsuranceCountry: selectedCountry,
+                      InsuranceProvince: selectedProvince,
+                    })
+                    .then(() => {
+                      navigation.navigate('InsuranceFormC');
+                      setComapnyName('');
+                      setAddress('');
+                      setCity('');
+                      setZipCode('');
+                    })
+                    .catch(error => {
+                      alert('Something went wrong' + error);
+                    });
+                } else {
+                  console.log('Validation required');
+                }
+              } else {
+                ToastAndroid.showWithGravityAndOffset(
+                  'Fields required',
+                  ToastAndroid.SHORT,
+                  ToastAndroid.BOTTOM,
+                  10,
+                  60,
+                );
+              }
+            } else {
+              ToastAndroid.showWithGravityAndOffset(
+                'Fields required',
+                ToastAndroid.SHORT,
+                ToastAndroid.BOTTOM,
+                10,
+                60,
+              );
+            }
+          } else {
+            ToastAndroid.showWithGravityAndOffset(
+              'Fields required',
+              ToastAndroid.SHORT,
+              ToastAndroid.BOTTOM,
+              10,
+              60,
+            );
+          }
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
     } else {
-      console.log('Validation required');
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
     }
   };
 
@@ -69,7 +130,7 @@ const InsuranceFormB = ({route, navigation}) => {
   };
 
   const handlePostalCode = e => {
-    let regex = /[A-Za-z0-9]{3}+ ?([A-Za-z0-9])*$/gi;
+    let regex = /[A-Za-z0-9]{3}([A-Za-z0-9]+ ?)*$/gi;
     setZipCode(e);
     if (!regex.test(e)) {
       console.log('format must be xxx xxx');

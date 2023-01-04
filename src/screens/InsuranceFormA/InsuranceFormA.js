@@ -5,46 +5,74 @@ import {
   View,
   Text,
   Pressable,
+  ToastAndroid,
   Image,
   Dimensions,
   TouchableOpacity,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import moment from 'moment';
 import style from './style';
 import BottomBtns from './../../Components/BottomBtns/BottomBtns';
 import {useSelector} from 'react-redux';
-
-import Fontisto from 'react-native-vector-icons/Fontisto';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import database from '@react-native-firebase/database';
-
 import Constraints from '../../Constraints/Constraints';
 
 const InsuranceFormA = ({route, navigation}) => {
   const {width, height} = Dimensions.get('window');
   const [insuranceNum, setInsuranceNum] = useState('');
   const [insuranceExpiry, setInsuranceExpiry] = useState('');
-
+  const [todayDate, setTodatDate] = useState(new Date());
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/insuranceInformation')
-      .push({
-        LicenseNumber: insuranceNum,
-        LicenseExpiry: insuranceExpiry,
-      })
-      .then(() => {
-        navigation.navigate('InsuranceFormB');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
-  };
-
-  const changeColor = id => {
-    setColor(id);
+    if (insuranceNum.length > 0) {
+      if (insuranceExpiry.length > 0) {
+        if (
+          moment().format('DD') + '/' + todayDate.getFullYear() ===
+          insuranceExpiry
+        ) {
+          ToastAndroid.showWithGravityAndOffset(
+            'Expiry date should not be todays date',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        } else {
+          database()
+            .ref('users/' + signUpKey + '/insuranceInformation')
+            .push({
+              LicenseNumber: insuranceNum,
+              LicenseExpiry: insuranceExpiry,
+            })
+            .then(() => {
+              navigation.navigate('InsuranceFormB');
+            })
+            .catch(error => {
+              alert('Something went wrong' + error);
+            });
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const handleChange3 = e => {

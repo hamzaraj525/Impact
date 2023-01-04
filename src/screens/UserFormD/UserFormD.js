@@ -6,6 +6,7 @@ import {
   Text,
   Pressable,
   Image,
+  ToastAndroid,
   Dimensions,
   TouchableOpacity,
   SafeAreaView,
@@ -42,18 +43,38 @@ const UserFormD = ({route, navigation}) => {
   };
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/personalInformation')
-      .push({
-        LicenseNumber: licenseNum,
-        LicenseExpiry: licenseExpiry,
-      })
-      .then(() => {
-        updateUserVerify();
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (licenseNum.length > 0) {
+      if (licenseExpiry.length > 0) {
+        database()
+          .ref('users/' + signUpKey + '/personalInformation')
+          .push({
+            LicenseNumber: licenseNum,
+            LicenseExpiry: licenseExpiry,
+          })
+          .then(() => {
+            updateUserVerify();
+          })
+          .catch(error => {
+            alert('Something went wrong' + error);
+          });
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const changeColor = id => {

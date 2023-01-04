@@ -1,53 +1,55 @@
-import React, {useState, useRef, useEffect, useId} from 'react';
+import React, {useState} from 'react';
 import {
-  StatusBar,
-  TextInput,
   Text,
   Dimensions,
   View,
   Pressable,
-  Image,
-  TouchableOpacity,
+  ToastAndroid,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
 import style from './style';
+
 import BottomBtns from './../../Components/BottomBtns/BottomBtns';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {Picker} from '@react-native-picker/picker';
-import {useDispatch, useSelector} from 'react-redux';
-import {genderBtns} from '../../DataStore/RegDocData';
-import Fontisto from 'react-native-vector-icons/Fontisto';
-import {addUserid} from '../../Redux/Action/actions';
+import {useSelector} from 'react-redux';
 import database from '@react-native-firebase/database';
-import auth from '@react-native-firebase/auth';
 import Constraints from '../../Constraints/Constraints';
 
 const UserFormB = ({route, navigation}) => {
-  const {width, height} = Dimensions.get('window');
   const [show, setShow] = useState(false);
   const [date, setDate] = useState(new Date());
+  const [todayDate, setTodatDate] = useState(new Date());
   const [mode, setMode] = useState('date');
-
-  const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
+  const {signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/personalInformation')
-      .push({
-        DateOfBirth:
-          date.getDate() +
-          ' / ' +
-          (date.getMonth() + 1) +
-          ' / ' +
-          date.getFullYear(),
-      })
-      .then(() => {
-        navigation.navigate('UserFormC');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (todayDate.getFullYear() - date.getFullYear() < 18) {
+      ToastAndroid.showWithGravityAndOffset(
+        'Age must be 18 years old or above',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    } else {
+      database()
+        .ref('users/' + signUpKey + '/personalInformation')
+        .push({
+          DateOfBirth:
+            date.getDate() +
+            ' / ' +
+            (date.getMonth() + 1) +
+            ' / ' +
+            date.getFullYear(),
+        })
+        .then(() => {
+          navigation.navigate('UserFormC');
+        })
+        .catch(error => {
+          alert('Something went wrong' + error);
+        });
+    }
   };
 
   const showDatepicker = () => {

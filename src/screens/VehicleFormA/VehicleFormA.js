@@ -3,6 +3,7 @@ import {
   StatusBar,
   TextInput,
   View,
+  ToastAndroid,
   Text,
   Pressable,
   Image,
@@ -29,22 +30,52 @@ const VehicleFormA = ({route, navigation}) => {
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/vehicleInformation')
-      .push({
-        vehivleModel: vehivleModel,
-        vehicleModelYear: vehicleModelYear,
-        colorVehicle: colorVehicle,
-      })
-      .then(() => {
-        navigation.navigate('VehicleFormB');
-        setVehicleModel('');
-        setVehicleModelYear('');
-        setVehicleColor('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (vehivleModel.length > 0) {
+      if (vehicleModelYear.length > 0) {
+        if (colorVehicle.length > 0) {
+          database()
+            .ref('users/' + signUpKey + '/vehicleInformation')
+            .push({
+              vehivleModel: vehivleModel,
+              vehicleModelYear: vehicleModelYear,
+              colorVehicle: colorVehicle,
+            })
+            .then(() => {
+              navigation.navigate('VehicleFormB');
+              setVehicleModel('');
+              setVehicleModelYear('');
+              setVehicleColor('');
+            })
+            .catch(error => {
+              alert('Something went wrong' + error);
+            });
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const changeColor = id => {

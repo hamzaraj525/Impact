@@ -3,6 +3,7 @@ import {
   StatusBar,
   TextInput,
   View,
+  ToastAndroid,
   Text,
   Pressable,
   Image,
@@ -57,30 +58,90 @@ const InsuranceFormD = ({route, navigation}) => {
   };
 
   const uploadToDatabase = async () => {
-    if (validate === false) {
-      database()
-        .ref('users/' + signUpKey + '/insuranceInformation')
-        .push({
-          InuranceSubscriberPhoneNumber: phone,
-          InuranceSubscriberaddress: address,
-          InuranceSubscribercity: city,
-          InuranceSubscriberzipCode: zipCode,
-          InuranceSubscribercountry: selectedCountry,
-          InuranceSubscriberprovince: selectedProvince,
-          insuranceDetailsVerified: true,
-        })
-        .then(() => {
-          updateInsuranceVerify();
-          setPhone('');
-          setAddress('');
-          setCity('');
-          setZipCode('');
-        })
-        .catch(error => {
-          alert('Something went wrong' + error);
-        });
+    if (phone.length > 0) {
+      if (address.length > 0) {
+        if (city.length > 0) {
+          if (zipCode.length > 0) {
+            if (selectedCountry.length > 0) {
+              if (selectedProvince.length > 0) {
+                if (validate === false) {
+                  database()
+                    .ref('users/' + signUpKey + '/insuranceInformation')
+                    .push({
+                      InuranceSubscriberPhoneNumber: phone,
+                      InuranceSubscriberaddress: address,
+                      InuranceSubscribercity: city,
+                      InuranceSubscriberzipCode: zipCode,
+                      InuranceSubscribercountry: selectedCountry,
+                      InuranceSubscriberprovince: selectedProvince,
+                      insuranceDetailsVerified: true,
+                    })
+                    .then(() => {
+                      updateInsuranceVerify();
+                      setPhone('');
+                      setAddress('');
+                      setCity('');
+                      setZipCode('');
+                    })
+                    .catch(error => {
+                      alert('Something went wrong' + error);
+                    });
+                } else {
+                  console.log('Validation required');
+                }
+              } else {
+                ToastAndroid.showWithGravityAndOffset(
+                  'Fields required',
+                  ToastAndroid.SHORT,
+                  ToastAndroid.BOTTOM,
+                  10,
+                  60,
+                );
+              }
+            } else {
+              ToastAndroid.showWithGravityAndOffset(
+                'Fields required',
+                ToastAndroid.SHORT,
+                ToastAndroid.BOTTOM,
+                10,
+                60,
+              );
+            }
+          } else {
+            ToastAndroid.showWithGravityAndOffset(
+              'Fields required',
+              ToastAndroid.SHORT,
+              ToastAndroid.BOTTOM,
+              10,
+              60,
+            );
+          }
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
     } else {
-      console.log('Validation required');
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
     }
   };
 

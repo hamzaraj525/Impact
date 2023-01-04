@@ -6,6 +6,7 @@ import {
   Text,
   Pressable,
   Image,
+  ToastAndroid,
   Dimensions,
   TouchableOpacity,
   SafeAreaView,
@@ -31,22 +32,52 @@ const UserFormA = ({route, navigation}) => {
   console.log('---------' + signUpKey);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/personalInformation')
-      .push({
-        FirstName: fName,
-        lastName: lName,
-        Gender: gender,
-      })
-      .then(() => {
-        navigation.navigate('UserFormB');
-        setFName('');
-        setLName('');
-        setGender('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (fName.length > 0) {
+      if (lName.length > 0) {
+        if (gender.length > 0) {
+          database()
+            .ref('users/' + signUpKey + '/personalInformation')
+            .push({
+              FirstName: fName,
+              lastName: lName,
+              Gender: gender,
+            })
+            .then(() => {
+              navigation.navigate('UserFormB');
+              setFName('');
+              setLName('');
+              setGender('');
+            })
+            .catch(error => {
+              alert('Something went wrong' + error);
+            });
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const changeColor = id => {

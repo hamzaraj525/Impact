@@ -119,21 +119,21 @@ export const ScreenNavigator = () => {
         <PersistGate loading={null} persistor={persistor}>
           <NavigationContainer>
             <Stack.Navigator>
-              {/* <Stack.Screen
+              <Stack.Screen
                 name="Splash"
                 component={Splash}
                 options={{headerShown: false}}
-              /> */}
-              {/* <Stack.Screen
+              />
+              <Stack.Screen
                 name="Intro2"
                 component={Intro2}
-                options={{ headerShown: false }}
+                options={{headerShown: false}}
               />
               <Stack.Screen
                 name="Intro1"
                 component={Intro1}
-                options={{ headerShown: false }}
-              /> */}
+                options={{headerShown: false}}
+              />
 
               <Stack.Screen
                 name="SignUp"

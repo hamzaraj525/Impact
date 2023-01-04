@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
   TouchableOpacity,
+  ToastAndroid,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -31,26 +32,86 @@ const UserFormC = ({route, navigation}) => {
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/personalInformation')
-      .push({
-        phoneNumber: phone,
-        address: address,
-        city: city,
-        zipCode: zipCode,
-        country: selectedCountry,
-        province: selectedProvince,
-      })
-      .then(() => {
-        navigation.navigate('UserFormD');
-        setPhone('');
-        setAddress('');
-        setCity('');
-        setZipCode('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+    if (phone.length > 0) {
+      if (address.length > 0) {
+        if (city.length > 0) {
+          if (zipCode.length > 0) {
+            if (selectedCountry.length > 0) {
+              if (selectedProvince.length > 0) {
+                database()
+                  .ref('users/' + signUpKey + '/personalInformation')
+                  .push({
+                    phoneNumber: phone,
+                    address: address,
+                    city: city,
+                    zipCode: zipCode,
+                    country: selectedCountry,
+                    province: selectedProvince,
+                  })
+                  .then(() => {
+                    navigation.navigate('UserFormD');
+                    setPhone('');
+                    setAddress('');
+                    setCity('');
+                    setZipCode('');
+                  })
+                  .catch(error => {
+                    alert('Something went wrong' + error);
+                  });
+              } else {
+                ToastAndroid.showWithGravityAndOffset(
+                  'Fields required',
+                  ToastAndroid.SHORT,
+                  ToastAndroid.BOTTOM,
+                  10,
+                  60,
+                );
+              }
+            } else {
+              ToastAndroid.showWithGravityAndOffset(
+                'Fields required',
+                ToastAndroid.SHORT,
+                ToastAndroid.BOTTOM,
+                10,
+                60,
+              );
+            }
+          } else {
+            ToastAndroid.showWithGravityAndOffset(
+              'Fields required',
+              ToastAndroid.SHORT,
+              ToastAndroid.BOTTOM,
+              10,
+              60,
+            );
+          }
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    } else {
+      ToastAndroid.showWithGravityAndOffset(
+        'Fields required',
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+        10,
+        60,
+      );
+    }
   };
 
   const changeColor = id => {
