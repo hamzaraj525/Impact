@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useId} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -29,7 +29,6 @@ import {
 } from './../../Redux/Action/actions';
 import BottomBtnSignUp from './../../Components/BottomBtns/BottomBtnSignUp';
 import {
-  GoogleSigninButton,
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
@@ -93,11 +92,13 @@ function SignUp({navigation, props, route}) {
           10,
           60,
         );
+        setLoader(false);
       });
   };
 
   const onGoogleButtonPress = async () => {
     try {
+      setLoader(true);
       // Get the users ID token
       const {idToken} = await GoogleSignin.signIn();
       // Create a Google credential with the token
@@ -106,6 +107,7 @@ function SignUp({navigation, props, route}) {
       const user_sign_in = auth().signInWithCredential(googleCredential);
       user_sign_in
         .then(userInfoo => {
+          setLoader(false);
           console.log(userInfoo.user.displayName);
           if (userInfoo.additionalUserInfo.isNewUser === false) {
             ToastAndroid.showWithGravityAndOffset(
@@ -121,6 +123,7 @@ function SignUp({navigation, props, route}) {
         })
         .catch(error => {
           alert(error);
+          setLoader(false);
         });
     } catch (error) {
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -131,6 +134,7 @@ function SignUp({navigation, props, route}) {
           10,
           60,
         );
+        setLoader(false);
       } else if (error.code === statusCodes.IN_PROGRESS) {
         ToastAndroid.showWithGravityAndOffset(
           'Google Sign Already In progress',
@@ -139,6 +143,7 @@ function SignUp({navigation, props, route}) {
           10,
           60,
         );
+        setLoader(false);
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         ToastAndroid.showWithGravityAndOffset(
           'Play services not available or outdated',
@@ -147,6 +152,7 @@ function SignUp({navigation, props, route}) {
           10,
           60,
         );
+        setLoader(false);
       } else if (error.code === 'auth/email-already-in-use') {
         alert('That email address is already in use!');
         setLoader(false);
@@ -200,12 +206,14 @@ function SignUp({navigation, props, route}) {
             10,
             60,
           );
+          setLoader(false);
         } else {
           uploadFaceBookInDataToDatabase(userInfoo2);
         }
       })
       .catch(error => {
         alert(error);
+        setLoader(false);
       });
   };
 
