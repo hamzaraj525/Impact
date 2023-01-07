@@ -31,6 +31,7 @@ const BottomBtns = props => {
         <Fontisto name={'arrow-left-l'} size={27} color={'white'} />
       </TouchableOpacity>
       <TouchableOpacity
+        disabled={props.disabled}
         onPress={() => {
           props.uploadToDatabase();
         }}
