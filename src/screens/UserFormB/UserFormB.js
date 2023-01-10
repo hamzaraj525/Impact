@@ -17,6 +17,7 @@ import database from '@react-native-firebase/database';
 import Constraints from '../../Constraints/Constraints';
 
 const UserFormB = ({route, navigation}) => {
+  const [loader, setLoader] = useState(false);
   const [show, setShow] = useState(false);
   const [date, setDate] = useState(new Date());
   const [todayDate, setTodatDate] = useState(new Date());
@@ -33,6 +34,7 @@ const UserFormB = ({route, navigation}) => {
         60,
       );
     } else {
+      setLoader(true);
       database()
         .ref('users/' + signUpKey + '/personalInformation')
         .push({
@@ -44,9 +46,11 @@ const UserFormB = ({route, navigation}) => {
             date.getFullYear(),
         })
         .then(() => {
+          setLoader(false);
           navigation.navigate('UserFormC');
         })
         .catch(error => {
+          setLoader(false);
           alert('Something went wrong' + error);
         });
     }
@@ -109,7 +113,11 @@ const UserFormB = ({route, navigation}) => {
       <ScrollView contentContainerStyle={{padding: '4%'}}>
         {inputsList()}
       </ScrollView>
-      <BottomBtns uploadToDatabase={uploadToDatabase} navigation={navigation} />
+      <BottomBtns
+        loader={loader}
+        uploadToDatabase={uploadToDatabase}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };

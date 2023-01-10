@@ -1,12 +1,10 @@
-import React, {useState, useRef, useEffect, useId} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  StatusBar,
   TextInput,
   View,
   Text,
-  Pressable,
-  Image,
   TouchableOpacity,
+  ToastAndroid,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -14,66 +12,88 @@ import BottomBtnsC from './../../Components/BottomBtns/BottomBtnsC';
 import * as Animatable from 'react-native-animatable';
 import style from './style';
 import {useDispatch, useSelector} from 'react-redux';
-import {InsuranceRadioBtns} from '../../DataStore/RegDocData';
-import Fontisto from 'react-native-vector-icons/Fontisto';
+import {vehicleRadioBtns} from '../../DataStore/RegDocData';
+import {vehicleVerify, insuranceVerify} from '../../Redux/Action/actions';
 import database from '@react-native-firebase/database';
-import {addUserid} from '../../Redux/Action/actions';
-
+import auth from '@react-native-firebase/auth';
 import Constraints from '../../Constraints/Constraints';
-import {
-  userPersoanlVerify,
-  vehicleVerify,
-  insuranceVerify,
-} from './../../Redux/Action/actions';
 
 const InsuranceFormC = ({route, navigation}) => {
   const dispatch = useDispatch();
+  const [loader, setLoader] = useState(false);
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
-  const [insuranceRadio, setInsuranceRadio] = useState('');
+  const [vehicleRadio, setVehicleRadio] = useState('');
   const [color, setColor] = useState(null);
-  const {
-    userId,
-    signUpKey,
-    userPersonalDetailsVerify,
-    vehicleDetailsVerify,
-    insuranceDetailsVerify,
-  } = useSelector(reducers => reducers.regReducer);
+  const {signUpKey} = useSelector(reducers => reducers.regReducer);
 
-  const updateInsuranceVerify = () => {
+  const updateVehicleVerify = () => {
     database()
       .ref('users/' + signUpKey)
-      .update({
-        insuranceDetailsVerified: true,
-      })
+      .update({insuranceDetailsVerified: true})
       .then(() => {
         dispatch(insuranceVerify(true));
         navigation.navigate('DocRegistration');
-        console.log('insurance Verify updated.');
+        console.log('vehicle Verify updated.');
+      });
+  };
+
+  const updateVehicleVerifyRadio = () => {
+    setLoader(true);
+    database()
+      .ref('users/' + signUpKey + '/insuranceInformation')
+      .update({VehicleOwnerYesorNo: vehicleRadio})
+      .then(() => {
+        setLoader(false);
+        updateVehicleVerify();
+        console.log('vehicle Verify radio.');
       });
   };
 
   const uploadToDatabase = async () => {
-    database()
-      .ref('users/' + signUpKey + '/insuranceInformation')
-      .push({
-        InsuranceUnderWriter: insuranceRadio,
-        InsuranceSubsciberFirstName: fName,
-        InsuranceSubscriberlastName: lName,
-      })
-      .then(() => {
-        if (color === '0') {
-          updateInsuranceVerify();
-          navigation.navigate('DocRegistration');
+    setLoader(true);
+    if (color === '0') {
+      updateVehicleVerifyRadio();
+    } else {
+      if (fName.length > 0) {
+        if (lName.length > 0) {
+          setLoader(true);
+          database()
+            .ref('users/' + signUpKey + '/insuranceInformation')
+            .push({
+              VehicleOwnerYesorNo: vehicleRadio,
+              VehicleOwnerFirstName: fName,
+              VehicleOwnerLastName: lName,
+            })
+            .then(() => {
+              setLoader(false);
+              navigation.navigate('InsuranceFormD');
+              setFName('');
+              setLName('');
+            })
+            .catch(error => {
+              setLoader(false);
+              alert('Something went wrong' + error);
+            });
         } else {
-          navigation.navigate('InsuranceFormD');
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
         }
-        setFName('');
-        setLName('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
-      });
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    }
   };
 
   const changeColor = id => {
@@ -92,16 +112,14 @@ const InsuranceFormC = ({route, navigation}) => {
 
   const btnFunction = item => {
     changeColor(item.key);
-    setInsuranceRadio(item.title);
+    setVehicleRadio(item.title);
   };
 
   const inputsList = () => {
     return (
-      <View>
-        <Text style={style.headerTxt}>
-          {Constraints.INSURANCE_UNDERWRITER_WHO}
-        </Text>
-        {InsuranceRadioBtns.map(item => {
+      <View style={{}}>
+        <Text style={style.headerTxt}>{Constraints.VEHICLE_OWNER_WHO}</Text>
+        {vehicleRadioBtns.map(item => {
           return (
             <View style={{padding: '4%'}} key={item.key}>
               <TouchableOpacity
@@ -129,7 +147,7 @@ const InsuranceFormC = ({route, navigation}) => {
             useNativeDriver
             animation={'slideInLeft'}>
             <Text style={style.headerTxt}>
-              {Constraints.INSURANCE_SUBSCRIBER_FULLNAME}
+              {Constraints.VEHICLE_OWNER_FULLNAME}
             </Text>
             <View style={[style.passwordContainer, {marginTop: '1%'}]}>
               <TextInput
@@ -172,7 +190,9 @@ const InsuranceFormC = ({route, navigation}) => {
       <ScrollView contentContainerStyle={{padding: '4%'}}>
         {inputsList()}
       </ScrollView>
+
       <BottomBtnsC
+        loader={loader}
         color={color}
         uploadToDatabase={uploadToDatabase}
         navigation={navigation}

@@ -23,6 +23,7 @@ import {addUserid} from '../../Redux/Action/actions';
 import Constraints from '../../Constraints/Constraints';
 
 const VehicleFormA = ({route, navigation}) => {
+  const [loader, setLoader] = useState(false);
   const [vehivleModel, setVehicleModel] = useState('');
   const [vehicleModelYear, setVehicleModelYear] = useState('');
   const [colorVehicle, setVehicleColor] = useState('');
@@ -33,6 +34,7 @@ const VehicleFormA = ({route, navigation}) => {
     if (vehivleModel.length > 0) {
       if (vehicleModelYear.length > 0) {
         if (colorVehicle.length > 0) {
+          setLoader(true);
           database()
             .ref('users/' + signUpKey + '/vehicleInformation')
             .push({
@@ -41,12 +43,14 @@ const VehicleFormA = ({route, navigation}) => {
               colorVehicle: colorVehicle,
             })
             .then(() => {
+              setLoader(false);
               navigation.navigate('VehicleFormB');
               setVehicleModel('');
               setVehicleModelYear('');
               setVehicleColor('');
             })
             .catch(error => {
+              setLoader(false);
               alert('Something went wrong' + error);
             });
         } else {
@@ -143,7 +147,11 @@ const VehicleFormA = ({route, navigation}) => {
       <ScrollView contentContainerStyle={{padding: '4%'}}>
         {inputsList()}
       </ScrollView>
-      <BottomBtns uploadToDatabase={uploadToDatabase} navigation={navigation} />
+      <BottomBtns
+        loader={loader}
+        uploadToDatabase={uploadToDatabase}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };

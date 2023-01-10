@@ -1,13 +1,10 @@
-import React, {useState, useRef, useEffect, useId} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-  StatusBar,
   TextInput,
   View,
   Text,
-  Pressable,
-  ToastAndroid,
-  Image,
   TouchableOpacity,
+  ToastAndroid,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -16,19 +13,14 @@ import * as Animatable from 'react-native-animatable';
 import style from './style';
 import {useDispatch, useSelector} from 'react-redux';
 import {vehicleRadioBtns} from '../../DataStore/RegDocData';
-import Fontisto from 'react-native-vector-icons/Fontisto';
-import {
-  addUserid,
-  userPersoanlVerify,
-  vehicleVerify,
-  insuranceVerify,
-} from '../../Redux/Action/actions';
+import {vehicleVerify} from '../../Redux/Action/actions';
 import database from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 import Constraints from '../../Constraints/Constraints';
 
 const VehicleFormC = ({route, navigation}) => {
   const dispatch = useDispatch();
+  const [loader, setLoader] = useState(false);
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
   const [vehicleRadio, setVehicleRadio] = useState('');
@@ -44,9 +36,7 @@ const VehicleFormC = ({route, navigation}) => {
   const updateVehicleVerify = () => {
     database()
       .ref('users/' + signUpKey)
-      .update({
-        vehicleDetailsVerified: true,
-      })
+      .update({vehicleDetailsVerified: true})
       .then(() => {
         dispatch(vehicleVerify(true));
         navigation.navigate('DocRegistration');
@@ -54,27 +44,59 @@ const VehicleFormC = ({route, navigation}) => {
       });
   };
 
-  const uploadToDatabase = async () => {
+  const updateVehicleVerifyRadio = () => {
     database()
       .ref('users/' + signUpKey + '/vehicleInformation')
-      .push({
-        VehicleOwnerYesorNo: vehicleRadio,
-        VehicleOwnerFirstName: fName,
-        VehicleOwnerLastName: lName,
-      })
+      .update({VehicleOwnerYesorNo: vehicleRadio})
       .then(() => {
-        if (color === '0') {
-          updateVehicleVerify();
-          navigation.navigate('DocRegistration');
-        } else {
-          navigation.navigate('VehicleFormD');
-        }
-        setFName('');
-        setLName('');
-      })
-      .catch(error => {
-        alert('Something went wrong' + error);
+        updateVehicleVerify();
+        console.log('vehicle Verify radio.');
       });
+  };
+
+  const uploadToDatabase = async () => {
+    if (color === '0') {
+      updateVehicleVerifyRadio();
+    } else {
+      if (fName.length > 0) {
+        if (lName.length > 0) {
+          setLoader(true);
+          database()
+            .ref('users/' + signUpKey + '/vehicleInformation')
+            .push({
+              VehicleOwnerYesorNo: vehicleRadio,
+              VehicleOwnerFirstName: fName,
+              VehicleOwnerLastName: lName,
+            })
+            .then(() => {
+              setLoader(false);
+              navigation.navigate('VehicleFormD');
+              setFName('');
+              setLName('');
+            })
+            .catch(error => {
+              setLoader(false);
+              alert('Something went wrong' + error);
+            });
+        } else {
+          ToastAndroid.showWithGravityAndOffset(
+            'Fields required',
+            ToastAndroid.SHORT,
+            ToastAndroid.BOTTOM,
+            10,
+            60,
+          );
+        }
+      } else {
+        ToastAndroid.showWithGravityAndOffset(
+          'Fields required',
+          ToastAndroid.SHORT,
+          ToastAndroid.BOTTOM,
+          10,
+          60,
+        );
+      }
+    }
   };
 
   const changeColor = id => {
@@ -173,6 +195,7 @@ const VehicleFormC = ({route, navigation}) => {
       </ScrollView>
 
       <BottomBtnsC
+        loader={loader}
         color={color}
         uploadToDatabase={uploadToDatabase}
         navigation={navigation}

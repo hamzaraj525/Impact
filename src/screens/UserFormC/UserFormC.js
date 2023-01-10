@@ -1,14 +1,9 @@
-import React, {useState, useRef, useEffect, useId} from 'react';
+import React, {useState, useRef} from 'react';
 import {
-  StatusBar,
   TextInput,
   View,
   Text,
-  Pressable,
-  Image,
   KeyboardAvoidingView,
-  TouchableOpacity,
-  ToastAndroid,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -16,11 +11,7 @@ import style from './style';
 import BottomBtns from './../../Components/BottomBtns/BottomBtns';
 import {Picker} from '@react-native-picker/picker';
 import {useDispatch, useSelector} from 'react-redux';
-import {genderBtns} from '../../DataStore/RegDocData';
-import Fontisto from 'react-native-vector-icons/Fontisto';
 import database from '@react-native-firebase/database';
-import auth from '@react-native-firebase/auth';
-import {addUserid} from '../../Redux/Action/actions';
 import Constraints from '../../Constraints/Constraints';
 import {countries, provinces} from './../../DataStore/RegDocData';
 import {Formik} from 'formik';
@@ -36,22 +27,27 @@ const SignupSchema = Yup.object().shape({
     .matches(/^[0-9]{10}$/, 'Invalid format.')
     .required('Required'),
   address: Yup.string().max(100, 'Too Long!').required('Required'),
-  city: Yup.string().max(30, 'Too Long!').required('Required'),
+  city: Yup.string().max(30, 'Too Long!').required('City Required'),
   zipCode: Yup.string()
     .min(7, 'Code postale Too short!')
     .max(7, 'Code postale Too Long!')
-    .matches(/^[^,.-]*$/, 'No period')
-    .matches(/^[^!@#$%^&*=<>:;|~]*$/, 'No symbols')
-    .matches(/^[A-Za-z0-9]{3} [A-Za-z0-9]{3}$/, 'Invalid format.')
-    .required('Required'),
+    .matches(/^[^,.-]*$/, 'Code postale No period')
+    .matches(/^[^!@#$%^&*=<>:;|~]*$/, 'Code postale No symbols')
+    .matches(
+      /^[A-Za-z0-9]{3} [A-Za-z0-9]{3}$/,
+      'Code postale format must be xxx xxx.',
+    )
+    .required('Code postale Required'),
   selectedCountry: Yup.string().required('Required'),
   selectedProvince: Yup.string().required('Required'),
 });
 
 const UserFormC = ({route, navigation}) => {
+  const [loader, setLoader] = useState(false);
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const uploadToDatabase = async e => {
+    setLoader(true);
     database()
       .ref('users/' + signUpKey + '/personalInformation')
       .push({
@@ -63,9 +59,11 @@ const UserFormC = ({route, navigation}) => {
         province: e.selectedProvince,
       })
       .then(() => {
+        setLoader(false);
         navigation.navigate('UserFormD');
       })
       .catch(error => {
+        setLoader(false);
         alert('Something went wrong' + error);
       });
   };
@@ -122,7 +120,9 @@ const UserFormC = ({route, navigation}) => {
                   />
                 </View>
                 {errors.phone && touched.phone && (
-                  <Text style={style.errTxt}>{errors.phone}</Text>
+                  <Text style={[style.errTxt, {alignSelf: 'flex-start'}]}>
+                    {errors.phone}
+                  </Text>
                 )}
                 <Text style={style.headerTxt}>{Constraints.HOME_ADDRESS}</Text>
                 <View style={[style.passwordContainer, {marginTop: '3%'}]}>
@@ -136,7 +136,9 @@ const UserFormC = ({route, navigation}) => {
                   />
                 </View>
                 {errors.address && touched.address && (
-                  <Text style={style.errTxt}>{errors.address}</Text>
+                  <Text style={[style.errTxt, {alignSelf: 'flex-start'}]}>
+                    {errors.address}
+                  </Text>
                 )}
 
                 <View style={[style.inputParent, {marginTop: '7%'}]}>
@@ -149,9 +151,6 @@ const UserFormC = ({route, navigation}) => {
                       onBlur={() => setFieldTouched('city')}
                     />
                   </View>
-                  {errors.city && touched.city && (
-                    <Text style={style.errTxt}>{errors.city}</Text>
-                  )}
 
                   <View style={[style.passwordContainer, {width: '40%'}]}>
                     <TextInput
@@ -163,15 +162,33 @@ const UserFormC = ({route, navigation}) => {
                     />
                   </View>
                 </View>
-                {errors.zipCode && touched.zipCode && (
-                  <Text
-                    style={[
-                      style.errTxt,
-                      {alignSelf: 'center', width: '100%'},
-                    ]}>
-                    {errors.zipCode}
-                  </Text>
-                )}
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  {errors.city && touched.city && (
+                    <Text
+                      style={[
+                        style.errTxt,
+                        {alignSelf: 'flex-start', marginTop: '2%'},
+                      ]}>
+                      {errors.city}
+                    </Text>
+                  )}
+
+                  {errors.zipCode && touched.zipCode && (
+                    <Text
+                      style={[
+                        style.errTxt,
+                        {alignSelf: 'flex-end', marginTop: '2%'},
+                      ]}>
+                      {errors.zipCode}
+                    </Text>
+                  )}
+                </View>
                 <View style={[style.inputParent, {marginTop: '7%'}]}>
                   <Picker
                     mode="dropdown"
@@ -215,6 +232,7 @@ const UserFormC = ({route, navigation}) => {
           </ScrollView>
           <BottomBtns
             disabled={!isValid}
+            loader={loader}
             uploadToDatabase={handleSubmit}
             navigation={navigation}
           />

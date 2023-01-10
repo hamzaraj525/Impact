@@ -1,15 +1,5 @@
 import React, {useState, useRef, useEffect, useId} from 'react';
-import {
-  StatusBar,
-  TextInput,
-  View,
-  Text,
-  Pressable,
-  Image,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
+import {ActivityIndicator, View, Text, TouchableOpacity} from 'react-native';
 import style from './style';
 import {Picker} from '@react-native-picker/picker';
 import {useDispatch, useSelector} from 'react-redux';
@@ -36,7 +26,11 @@ const BottomBtns = props => {
           props.uploadToDatabase();
         }}
         style={[style.bottomBtn2, {backgroundColor: '#1B6878'}]}>
-        <Text style={{color: '#fff', fontSize: 16}}>Continuer</Text>
+        {props.loader ? (
+          <ActivityIndicator size={'small'} color={'white'} />
+        ) : (
+          <Text style={{color: '#fff', fontSize: 16}}>Continuer</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

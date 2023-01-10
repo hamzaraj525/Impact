@@ -1,13 +1,9 @@
-import React, {useState, useRef, useEffect, useId} from 'react';
+import React, {useState, useRef} from 'react';
 import {
-  StatusBar,
   TextInput,
   View,
-  ToastAndroid,
   Text,
-  Pressable,
-  Image,
-  TouchableOpacity,
+  KeyboardAvoidingView,
   SafeAreaView,
   ScrollView,
 } from 'react-native';
@@ -15,262 +11,245 @@ import style from './style';
 import BottomBtns from './../../Components/BottomBtns/BottomBtns';
 import {Picker} from '@react-native-picker/picker';
 import {useDispatch, useSelector} from 'react-redux';
-import {genderBtns} from '../../DataStore/RegDocData';
-import Fontisto from 'react-native-vector-icons/Fontisto';
 import database from '@react-native-firebase/database';
-import auth from '@react-native-firebase/auth';
-import {
-  addUserid,
-  userPersoanlVerify,
-  vehicleVerify,
-  insuranceVerify,
-} from '../../Redux/Action/actions';
 import Constraints from '../../Constraints/Constraints';
+import {countries, provinces} from './../../DataStore/RegDocData';
+import {vehicleVerify, insuranceVerify} from './../../Redux/Action/actions';
+import {Formik} from 'formik';
+import * as Yup from 'yup';
+const keyboardVerticalOffset = Platform.OS === 'ios' ? 40 : 0;
+
+const SignupSchema = Yup.object().shape({
+  phone: Yup.string()
+    .min(10, 'Too short!')
+    .max(10, 'Too Long!')
+    .matches(/^[^,.-]*$/, 'No period')
+    .matches(/^[^!@#$%^&*=<>:;|~]*$/, 'No symbols')
+    .matches(/^[0-9]{10}$/, 'Invalid format.')
+    .required('Required'),
+  address: Yup.string().max(100, 'Too Long!').required('Required'),
+  city: Yup.string().max(30, 'Too Long!').required('City Required'),
+  zipCode: Yup.string()
+    .min(7, 'Code postale Too short!')
+    .max(7, 'Code postale Too Long!')
+    .matches(/^[^,.-]*$/, 'Code postale No period')
+    .matches(/^[^!@#$%^&*=<>:;|~]*$/, 'Code postale No symbols')
+    .matches(
+      /^[A-Za-z0-9]{3} [A-Za-z0-9]{3}$/,
+      'Code postale format must be xxx xxx.',
+    )
+    .required('Code postale Required'),
+  selectedCountry: Yup.string().required('Required'),
+  selectedProvince: Yup.string().required('Required'),
+});
 
 const VehicleFormD = ({route, navigation}) => {
   const dispatch = useDispatch();
-  const [validate, setValidate] = useState(false);
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [zipCode, setZipCode] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('Canada');
-  const [selectedProvince, setSelectedProvince] = useState('Québec');
-  const {
-    userId,
-    signUpKey,
-    userPersonalDetailsVerify,
-    vehicleDetailsVerify,
-    insuranceDetailsVerify,
-  } = useSelector(reducers => reducers.regReducer);
+  const [loader, setLoader] = useState(false);
+  const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const updateVehicleVerify = () => {
+    setLoader(true);
     database()
       .ref('users/' + signUpKey)
       .update({
         vehicleDetailsVerified: true,
       })
       .then(() => {
+        setLoader(false);
         dispatch(vehicleVerify(true));
         navigation.navigate('DocRegistration');
         console.log('vehicle Verify updated.');
       });
   };
 
-  const uploadToDatabase = async () => {
-    if (phone.length > 0) {
-      if (address.length > 0) {
-        if (city.length > 0) {
-          if (zipCode.length > 0) {
-            if (selectedCountry.length > 0) {
-              if (selectedProvince.length > 0) {
-                if (validate === false) {
-                  database()
-                    .ref('users/' + signUpKey + '/vehicleInformation')
-                    .push({
-                      OwnerPhoneNumber: phone,
-                      OwnerAddress: address,
-                      OwnerCity: city,
-                      OwnerZipCode: zipCode,
-                      OwnerCountry: selectedCountry,
-                      OwnerProvince: selectedProvince,
-                      vehicleDetailsVerified: true,
-                    })
-                    .then(() => {
-                      updateVehicleVerify();
-                      setPhone('');
-                      setAddress('');
-                      setCity('');
-                      setZipCode('');
-                    })
-                    .catch(error => {
-                      alert('Something went wrong' + error);
-                    });
-                } else {
-                  console.log('Validation required');
-                }
-              } else {
-                ToastAndroid.showWithGravityAndOffset(
-                  'Fields required',
-                  ToastAndroid.SHORT,
-                  ToastAndroid.BOTTOM,
-                  10,
-                  60,
-                );
-              }
-            } else {
-              ToastAndroid.showWithGravityAndOffset(
-                'Fields required',
-                ToastAndroid.SHORT,
-                ToastAndroid.BOTTOM,
-                10,
-                60,
-              );
-            }
-          } else {
-            ToastAndroid.showWithGravityAndOffset(
-              'Fields required',
-              ToastAndroid.SHORT,
-              ToastAndroid.BOTTOM,
-              10,
-              60,
-            );
-          }
-        } else {
-          ToastAndroid.showWithGravityAndOffset(
-            'Fields required',
-            ToastAndroid.SHORT,
-            ToastAndroid.BOTTOM,
-            10,
-            60,
-          );
-        }
-      } else {
-        ToastAndroid.showWithGravityAndOffset(
-          'Fields required',
-          ToastAndroid.SHORT,
-          ToastAndroid.BOTTOM,
-          10,
-          60,
-        );
-      }
-    } else {
-      ToastAndroid.showWithGravityAndOffset(
-        'Fields required',
-        ToastAndroid.SHORT,
-        ToastAndroid.BOTTOM,
-        10,
-        60,
-      );
-    }
-  };
-
-  const handleChange2 = e => {
-    const result = e.replace(/[^0-9]/g, '');
-    setPhone(result);
-  };
-
-  const handleChange3 = e => {
-    const result = e.replace(/[^a-z]/gi, '');
-    setCity(result);
-  };
-
-  const handlePostalCode = e => {
-    let regex = /[A-Za-z0-9]{3}([A-Za-z0-9]+ ?)*$/gi;
-    setZipCode(e);
-    if (!regex.test(e)) {
-      console.log('format must be xxx xxx');
-      setValidate(true);
-    } else {
-      setValidate(false);
-      console.log('Valid');
-    }
-  };
-
-  const inputsList = () => {
-    return (
-      <View>
-        <Text style={style.headerTxt}>
-          {Constraints.VEHICLE_OWNER_PHONE_NUMBER}
-        </Text>
-
-        <View style={[style.passwordContainer, {marginTop: '3%'}]}>
-          <TextInput
-            maxLength={10}
-            keyboardType="number-pad"
-            style={style.TiName}
-            value={phone}
-            onChangeText={e => {
-              handleChange2(e);
-            }}
-            placeholder={'Numéro de téléphone'}
-          />
-        </View>
-        <Text style={style.headerTxt}>
-          {Constraints.VEHICLE_OWNER_HOME_ADDRESS}
-        </Text>
-        <View style={[style.passwordContainer, {marginTop: '3%'}]}>
-          <TextInput
-            maxLength={100}
-            style={style.TiName}
-            value={address}
-            onChangeText={e => {
-              setAddress(e);
-            }}
-            placeholder={'Numéro et rue de l’adresse'}
-          />
-        </View>
-
-        <View style={[style.inputParent, {marginTop: '7%'}]}>
-          <View style={[style.passwordContainer, {width: '55%'}]}>
-            <TextInput
-              maxLength={100}
-              style={[style.TiName, {width: '55%'}]}
-              value={city}
-              onChangeText={e => {
-                handleChange3(e);
-              }}
-              placeholder={'Ville'}
-            />
-          </View>
-
-          <View style={[style.passwordContainer, {width: '40%'}]}>
-            <TextInput
-              maxLength={7}
-              style={[style.TiName, {width: '80%'}]}
-              value={zipCode}
-              onChangeText={e => {
-                handlePostalCode(e);
-              }}
-              placeholder={'Code postale'}
-            />
-          </View>
-        </View>
-        {validate ? (
-          <Text style={{color: 'red', alignSelf: 'center', marginTop: '4%'}}>
-            Le format du code postal doit être xxx xxx
-          </Text>
-        ) : (
-          <Text style={{}}></Text>
-        )}
-
-        <View style={[style.inputParent, {marginTop: '7%'}]}>
-          <Picker
-            mode="dropdown"
-            style={[style.picker, {backgroundColor: '#F6F3F5', width: '55%'}]}
-            selectedValue={selectedCountry}
-            onValueChange={(itemValue, itemIndex) => {
-              setSelectedCountry(itemValue);
-              console.log(itemValue);
-            }}>
-            <Picker.Item label="🇨🇦   Canada" value="Canada" />
-          </Picker>
-          <Picker
-            mode="dropdown"
-            style={[style.picker, {backgroundColor: '#F6F3F5', width: '40%'}]}
-            selectedValue={selectedProvince}
-            onValueChange={va => {
-              setSelectedProvince(va);
-              console.log('-----' + va);
-            }}>
-            <Picker.Item label="Québec" value="Québec" />
-          </Picker>
-        </View>
-      </View>
-    );
+  const uploadToDatabase = async e => {
+    setLoader(true);
+    database()
+      .ref('users/' + signUpKey + '/vehicleInformation')
+      .push({
+        phoneNumber: e.phone,
+        address: e.address,
+        city: e.city,
+        zipCode: e.zipCode,
+        country: e.selectedCountry,
+        province: e.selectedProvince,
+      })
+      .then(() => {
+        setLoader(false);
+        updateVehicleVerify();
+      })
+      .catch(error => {
+        alert('Something went wrong' + error);
+      });
   };
 
   return (
-    <SafeAreaView style={style.container}>
-      <View style={{padding: '4%'}}>
-        <Text style={style.stepTxt}>Étape 4 de 4</Text>
-        <View style={style.topBar} />
-      </View>
-      <ScrollView contentContainerStyle={{padding: '4%'}}>
-        {inputsList()}
-      </ScrollView>
-      <BottomBtns uploadToDatabase={uploadToDatabase} navigation={navigation} />
-    </SafeAreaView>
+    <Formik
+      initialValues={{
+        phone: '',
+        address: '',
+        city: '',
+        zipCode: '',
+        selectedCountry: 'Canada',
+        selectedProvince: 'Québec',
+      }}
+      validationSchema={SignupSchema}
+      onSubmit={e => {
+        uploadToDatabase(e);
+      }}>
+      {({
+        values,
+        errors,
+        touched,
+        isValid,
+        setFieldTouched,
+        handleChange,
+        handleSubmit,
+      }) => (
+        <SafeAreaView style={style.container}>
+          <View style={{padding: '4%'}}>
+            <Text style={style.stepTxt}>Étape 3 de 4</Text>
+            <View style={style.topBar} />
+          </View>
+          <ScrollView contentContainerStyle={{padding: '4%'}}>
+            <KeyboardAvoidingView
+              behavior="position"
+              keyboardVerticalOffset={keyboardVerticalOffset}>
+              <View>
+                <Text style={style.headerTxt}>
+                  {Constraints.ENTER_PHONE_NUMBER}
+                </Text>
+
+                <View style={[style.passwordContainer, {marginTop: '3%'}]}>
+                  <TextInput
+                    style={style.TiName}
+                    placeholder={'Numéro de téléphone'}
+                    value={values.phone}
+                    onChangeText={handleChange('phone')}
+                    onBlur={() => setFieldTouched('phone')}
+                  />
+                </View>
+                {errors.phone && touched.phone && (
+                  <Text style={[style.errTxt, {alignSelf: 'flex-start'}]}>
+                    {errors.phone}
+                  </Text>
+                )}
+                <Text style={style.headerTxt}>{Constraints.HOME_ADDRESS}</Text>
+                <View style={[style.passwordContainer, {marginTop: '3%'}]}>
+                  <TextInput
+                    maxLength={100}
+                    style={style.TiName}
+                    placeholder={'Numéro et rue de l’adresse'}
+                    value={values.address}
+                    onChangeText={handleChange('address')}
+                    onBlur={() => setFieldTouched('address')}
+                  />
+                </View>
+                {errors.address && touched.address && (
+                  <Text style={[style.errTxt, {alignSelf: 'flex-start'}]}>
+                    {errors.address}
+                  </Text>
+                )}
+
+                <View style={[style.inputParent, {marginTop: '7%'}]}>
+                  <View style={[style.passwordContainer, {width: '55%'}]}>
+                    <TextInput
+                      style={[style.TiName, {width: '55%'}]}
+                      placeholder={'Ville'}
+                      value={values.city}
+                      onChangeText={handleChange('city')}
+                      onBlur={() => setFieldTouched('city')}
+                    />
+                  </View>
+
+                  <View style={[style.passwordContainer, {width: '40%'}]}>
+                    <TextInput
+                      style={[style.TiName, {width: '80%'}]}
+                      value={values.zipCode}
+                      onChangeText={handleChange('zipCode')}
+                      onBlur={() => setFieldTouched('zipCode')}
+                      placeholder={'Code postale'}
+                    />
+                  </View>
+                </View>
+                <View
+                  style={{
+                    width: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  {errors.city && touched.city && (
+                    <Text
+                      style={[
+                        style.errTxt,
+                        {alignSelf: 'flex-start', marginTop: '2%'},
+                      ]}>
+                      {errors.city}
+                    </Text>
+                  )}
+
+                  {errors.zipCode && touched.zipCode && (
+                    <Text
+                      style={[
+                        style.errTxt,
+                        {alignSelf: 'flex-end', marginTop: '2%'},
+                      ]}>
+                      {errors.zipCode}
+                    </Text>
+                  )}
+                </View>
+                <View style={[style.inputParent, {marginTop: '7%'}]}>
+                  <Picker
+                    mode="dropdown"
+                    style={[
+                      style.picker,
+                      {backgroundColor: '#F6F3F5', width: '55%'},
+                    ]}
+                    selectedValue={values.selectedCountry}
+                    onValueChange={handleChange('selectedCountry')}>
+                    {countries.map(item => {
+                      return (
+                        <Picker.Item
+                          label={item.country.toString()}
+                          value={item.country.toString()}
+                          key={item.id.toString()}
+                        />
+                      );
+                    })}
+                  </Picker>
+                  <Picker
+                    mode="dropdown"
+                    style={[
+                      style.picker,
+                      {backgroundColor: '#F6F3F5', width: '40%'},
+                    ]}
+                    selectedValue={values.selectedProvince}
+                    onValueChange={handleChange('selectedProvince')}>
+                    {provinces.map(item => {
+                      return (
+                        <Picker.Item
+                          label={item.province.toString()}
+                          value={item.province.toString()}
+                          key={item.id.toString()}
+                        />
+                      );
+                    })}
+                  </Picker>
+                </View>
+              </View>
+            </KeyboardAvoidingView>
+          </ScrollView>
+          <BottomBtns
+            loader={loader}
+            disabled={!isValid}
+            uploadToDatabase={handleSubmit}
+            navigation={navigation}
+          />
+        </SafeAreaView>
+      )}
+    </Formik>
   );
 };
 export default VehicleFormD;

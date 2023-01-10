@@ -32,7 +32,7 @@ const SignupSchema = Yup.object().shape({
     .max(7, 'Too Long!')
     .matches(/^[^,.-]*$/, 'No period')
     .matches(/^[^!@#$%^&*+=<>:;|~]*$/, 'No symbols')
-    .matches(/^[A-Za-z0-9]{3} [A-Za-z0-9]{3}$/, 'Invalid format.')
+    .matches(/^[A-Za-z0-9]{3} [A-Za-z0-9]{3}$/, 'Format must be xxx xxx.')
     .required('Required'),
   vehicleRegCertiNumber: Yup.string()
     .min(12, 'Too short!')
@@ -46,8 +46,9 @@ const SignupSchema = Yup.object().shape({
 
 const VehicleFormB = ({route, navigation}) => {
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
-
+  const [loader, setLoader] = useState(false);
   const uploadToDatabase = async e => {
+    setLoader(true);
     database()
       .ref('users/' + signUpKey + '/vehicleInformation')
       .push({
@@ -55,9 +56,11 @@ const VehicleFormB = ({route, navigation}) => {
         vehicleRegCertiNumber: e.vehicleRegCertiNumber,
       })
       .then(() => {
+        setLoader(false);
         navigation.navigate('VehicleFormC');
       })
       .catch(error => {
+        setLoader(false);
         alert('Something went wrong' + error);
       });
   };
@@ -149,6 +152,7 @@ const VehicleFormB = ({route, navigation}) => {
             </KeyboardAvoidingView>
           </ScrollView>
           <BottomBtns
+            loader={loader}
             disabled={!isValid}
             uploadToDatabase={handleSubmit}
             navigation={navigation}

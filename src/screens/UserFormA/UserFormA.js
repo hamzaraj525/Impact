@@ -23,6 +23,7 @@ import auth from '@react-native-firebase/auth';
 
 const UserFormA = ({route, navigation}) => {
   const {width, height} = Dimensions.get('window');
+  const [loader, setLoader] = useState(false);
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
   const [gender, setGender] = useState('');
@@ -35,6 +36,7 @@ const UserFormA = ({route, navigation}) => {
     if (fName.length > 0) {
       if (lName.length > 0) {
         if (gender.length > 0) {
+          setLoader(true);
           database()
             .ref('users/' + signUpKey + '/personalInformation')
             .push({
@@ -43,12 +45,14 @@ const UserFormA = ({route, navigation}) => {
               Gender: gender,
             })
             .then(() => {
+              setLoader(false);
               navigation.navigate('UserFormB');
               setFName('');
               setLName('');
               setGender('');
             })
             .catch(error => {
+              setLoader(false);
               alert('Something went wrong' + error);
             });
         } else {
@@ -158,7 +162,11 @@ const UserFormA = ({route, navigation}) => {
       <ScrollView contentContainerStyle={{padding: '4%'}}>
         {inputsList()}
       </ScrollView>
-      <BottomBtns uploadToDatabase={uploadToDatabase} navigation={navigation} />
+      <BottomBtns
+        loader={loader}
+        uploadToDatabase={uploadToDatabase}
+        navigation={navigation}
+      />
     </SafeAreaView>
   );
 };

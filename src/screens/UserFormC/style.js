@@ -155,7 +155,6 @@ export default StyleSheet.create({
   },
   stepTxt: {color: 'grey', alignSelf: 'center', marginTop: '12%'},
   errTxt: {
-    width: '80%',
     color: 'red',
     fontSize: 12,
     alignSelf: 'center',

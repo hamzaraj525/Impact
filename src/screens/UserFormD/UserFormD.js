@@ -29,7 +29,7 @@ const SignupSchema = Yup.object().shape({
     .matches(/^[^,.-]*$/, 'numero de permis No period')
     .matches(/^[^!@#$%^&*+=<>:;|~]*$/, 'numero de permis No symbols allowed')
     .matches(/^\S+$/, 'numero de permis No Space allowed')
-    .matches(/^[0-9]{12}$/, 'numero de permis Invalid format.')
+    .matches(/^[A-Za-z0-9]{12}$/, 'numero de permis Invalid format.')
     .required('numero de permis Required'),
 
   licenseExpiry: Yup.string()
@@ -40,24 +40,37 @@ const SignupSchema = Yup.object().shape({
     .matches(/^\S+$/, 'expiration No Space allowed')
     .matches(
       /(0[1-9]|1[0-2])\/?(([0-9]{4}|[0-9]{2})$)/,
-      'expiration Invalid format.',
+      'expiration format must be xx/xxxx',
     )
-    .min()
+    .test('is-valid', '${path} is not valid year', value => {
+      if (value !== undefined && value.length === 7) {
+        let val = value.split('/');
+        let date = moment().year();
+        console.log('-----' + val[1], date);
+
+        if (val[1] > date) {
+          return true;
+        }
+      } else {
+      }
+    })
     .required('expiration Required'),
 });
 
 const UserFormD = ({route, navigation}) => {
   const dispatch = useDispatch();
-
+  const [loader, setLoader] = useState(false);
   const {userId, signUpKey} = useSelector(reducers => reducers.regReducer);
 
   const updateUserVerify = () => {
+    setLoader(true);
     database()
       .ref('users/' + signUpKey)
       .update({
         personDetailsVerified: true,
       })
       .then(() => {
+        setLoader(false);
         dispatch(userPersoanlVerify(true));
         navigation.navigate('DocRegistration');
         console.log('persoanl Verify updated.');
@@ -65,6 +78,7 @@ const UserFormD = ({route, navigation}) => {
   };
 
   const uploadToDatabase = async e => {
+    setLoader(true);
     database()
       .ref('users/' + signUpKey + '/personalInformation')
       .push({
@@ -72,6 +86,7 @@ const UserFormD = ({route, navigation}) => {
         LicenseExpiry: e.licenseExpiry,
       })
       .then(() => {
+        setLoader(false);
         updateUserVerify();
       })
       .catch(error => {
@@ -122,7 +137,6 @@ const UserFormD = ({route, navigation}) => {
                         {paddingHorizontal: '3%', width: '100%'},
                       ]}>
                       <TextInput
-                        keyboardType="number-pad"
                         style={[style.TiName, {width: '70%'}]}
                         value={values.licenseNum}
                         onChangeText={handleChange('licenseNum')}
@@ -195,6 +209,7 @@ const UserFormD = ({route, navigation}) => {
           </ScrollView>
           <BottomBtns
             disabled={!isValid}
+            loader={loader}
             uploadToDatabase={handleSubmit}
             navigation={navigation}
           />
